@@ -180,7 +180,7 @@ const Page = () => {
               
        <button
        disabled={isSubmitting || loadingState}
-       className='w-full my-4 md:my-2 p-3 bg-[black] text-white rounded-lg font-semibold'> Sign up </button>
+       className='w-full my-4 md:my-2 p-3 bg-[black] text-white rounded-lg font-semibold'> {loadingState ? "Signing up..." : "Sign up"}</button>
      </form>
 
      

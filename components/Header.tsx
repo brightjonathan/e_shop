@@ -1,8 +1,8 @@
 "use client";
 import { useState, useEffect } from "react";
-// import { useRouter} from "next/navigation";
+import { useRouter} from "next/navigation";
 import { assets } from "@/public/assets/assets";
-// import toast from "react-hot-toast";
+import toast from "react-hot-toast";
 import Link from "next/link";
 import Image from "next/image";
 import HamX from "./HamX";
@@ -11,10 +11,12 @@ import { ShowOnLogin, ShowOnLogout } from "@/components/HiddenLink";
 import AdminOnlyRoute from "./AdminOnlyRoute";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/lib/Firebase/client";
+import { signOutUser } from "@/lib/Actions/UserAuth.action";
+
 
 const Header = () => {
   const { user, setUser } = useAppContext();
-// const router = useRouter();
+  const router = useRouter();
 
   const [isOpen, setIsOpen] = useState(false);
   const [userOpen, setUserOpen] = useState(false);
@@ -46,7 +48,20 @@ const Header = () => {
   };
 
   const handleSignOut = async () => {
-    console.log('working');
+    if (window.confirm("Are you sure you want to sign out?")) {
+      try {
+      await signOutUser();
+      setUser(null);
+      setDisplayName("");
+      setUserOpen(false);
+      toast.success("Signed out successfully!");
+      router.push("/");
+    } catch (error) {
+      toast.error("Failed to sign out. Please try again.");
+      console.log(error);
+    }
+        
+    }
   };
 
   return (

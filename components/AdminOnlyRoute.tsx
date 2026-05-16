@@ -11,17 +11,17 @@ const AdminOnlyRoute = ({ children }: { children: React.ReactNode }) => {
 
   if (!isAdmin) {
     return (
-      <section style={{ height: "80vh" }}>
-        <div className="container">
-          <h2>Permission Denied.</h2>
-          <p>This page can only be viewed by an Admin user.</p>
+      <section style={{ height: "10vh" }}>
+        <div>
+          {/* <h2>Permission Denied.</h2>
+          <p>This page can only be viewed by an Admin user.</p> */}
 
-          <button
+          {/* <button
             className="--btn"
             onClick={() => router.push("/")}
           >
             &larr; Back To Home
-          </button>
+          </button> */}
         </div>
       </section>
     );
