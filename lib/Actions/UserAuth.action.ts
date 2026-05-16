@@ -1,5 +1,5 @@
 import { auth } from "../Firebase/client";
-import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from "firebase/auth";
 
 
 
@@ -11,5 +11,12 @@ export const registerUser = async (
 ) => {
   const { user } = await createUserWithEmailAndPassword(auth, email, password);
   await updateProfile(user, { displayName: username });
+  return user;
+};
+
+
+// login user with email and password
+export const loginUser = async (email: string, password: string) => {
+  const { user } = await signInWithEmailAndPassword(auth, email, password);
   return user;
 };

@@ -178,7 +178,9 @@ const Page = () => {
 
        <p className='text-center text-sm py-1'>By signing in you accept our <span className='underline'>terms and conditions & privacy policy</span></p>
               
-       <button type='submit' className='w-full my-4 md:my-2 p-3 bg-[black] text-white rounded-lg font-semibold'> Sign up </button>
+       <button
+       disabled={isSubmitting || loadingState}
+       className='w-full my-4 md:my-2 p-3 bg-[black] text-white rounded-lg font-semibold'> Sign up </button>
      </form>
 
      
