@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import InfoBox from "@/components/InfoBox";
 import styles from "@/css/Home.module.scss";
+import '@/css/globalScss.css'
 import { AiFillDollarCircle } from "react-icons/ai";
 import { BsCart4 } from "react-icons/bs";
 import { FaCartArrowDown } from "react-icons/fa";
@@ -22,19 +23,19 @@ const Page = () => {
         <InfoBox
           cardClass={`${styles.card} ${styles.card1}`}
           title={"Earnings"}
-          count='3'
+          count={1}
           icon={earningIcon}
         />
         <InfoBox
           cardClass={`${styles.card} ${styles.card2}`}
           title={"Products"}
-          count='2'
+          count={2}
           icon={productIcon}
         />
         <InfoBox
           cardClass={`${styles.card} ${styles.card3}`}
           title={"Orders"}
-          count='1'
+          count={1}
           icon={ordersIcon}
         />
       </div>

@@ -156,7 +156,7 @@ const Header = () => {
                 {/* Admin link — only visible to admins */}
                 <AdminOnlyRoute>
                   <Link
-                    href="/admin/home"
+                    href="/admin"
                     className="hover:text-gray-400 transition"
                     onClick={() => setUserOpen(false)}
                   >

@@ -90,8 +90,8 @@ const Page = () => {
 
  <div className='max-w-200 m-auto px-4'>
    <div className=' dark:bg-[#e8edea] px-10 py-8 rounded-lg text-black'>
-     <h1 className='text-2xl font-bold text-green-800 ' > Register  </h1>
-     <form autoComplete='on' onSubmit={handleSubmit} >
+     <h1 className='text-2xl font-bold text-green-800'> Register  </h1>
+     <form autoComplete='off' onSubmit={handleSubmit} >
 
        <div className='grid md:grid-cols-2 md:gap-8'>
 

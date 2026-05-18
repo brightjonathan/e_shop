@@ -1,8 +1,8 @@
-"use cleint"
+"use clint"
 
 import Navbar from "@/components/Admin/AdminNavbar";
 import styles from "@/css/Admin.module.scss";
-import '@/css/globalScss.css'
+// import '@/css/globalScss.css'
 
 export default function AdminLayout({
   children,
@@ -20,4 +20,4 @@ export default function AdminLayout({
       </div>
     </div>
   );
-}
+};
