@@ -29,9 +29,9 @@ export default function Productform({
 }: Props) {
   const [preview, setPreview] = useState<string | null>(null);
   const [imgLoaded, setImgLoaded] = useState(false);
-  const [priceValue, setPriceValue] = useState<string>(
-    product.price !== 0 ? String(product.price) : ""
-  );
+//   const [priceValue, setPriceValue] = useState<string>(
+//     product.price !== 0 ? String(product.price) : ""
+//   );
 
   const handleImageWithPreview = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -44,7 +44,7 @@ export default function Productform({
 
   const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const raw = e.target.value;
-    setPriceValue(raw);
+    // setPriceValue(raw);
     setProduct({ ...product, price: raw === "" ? 0 : Number(raw) });
   };
 
@@ -159,7 +159,7 @@ export default function Productform({
                     placeholder="0.00"
                     min="0"
                     step="0.01"
-                    value={priceValue}
+                    value={product.price !== 0 ? product.price.toString() : ""}
                     onChange={handlePriceChange}
                     required
                   />
