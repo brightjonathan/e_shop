@@ -94,7 +94,7 @@ $transition: 0.28s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   flex-direction: column;
   width: $sidebar-width;
-  height: 100vh;
+  height: 100%;
   background: $bg-dark;
   border-right: 1px solid $border;
   transition: transform $transition, box-shadow $transition;

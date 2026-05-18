@@ -7,7 +7,7 @@ const AdminOnlyRoute = ({ children }: { children: React.ReactNode }) => {
   const { user } = useAppContext();
   const router = useRouter();
 
-  const isAdmin = user?.email === "brightjonathan64@gmail.com";
+  const isAdmin = user?.email === process.env.NEXT_PUBLIC_ADMIN_EMAIL;
 
   if (!isAdmin) {
     return (
