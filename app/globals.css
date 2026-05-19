@@ -1,5 +1,11 @@
 @import "tailwindcss";
 
+
+
+html {
+  scroll-behavior: smooth;
+}
+
 /* LOADING SPINNER */
 .loadingSpinnerContainer {
   position: fixed;

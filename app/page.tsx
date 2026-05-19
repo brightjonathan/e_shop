@@ -1,8 +1,14 @@
+"use client"
+
 import Header from '@/components/Header';
 import HomeSlide from '@/components/HomeSlide';
-import React from 'react'
+import { useReloadOnVisit } from '@/lib/UseRelaodOnce';
 
 const Home = () => {
+
+    //ReLoad page once when user visit the home page
+    useReloadOnVisit("reLoadedHome");
+
   return (
     <div>
       <Header/>

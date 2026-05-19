@@ -29,7 +29,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} ${outfit.className} h-full text-gray-700 antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${outfit.className} h-full text-gray-700 antialiased data-scroll-behavior="smooth"`}
     >
      <body className="min-h-full flex flex-col">
         <AppContextProvider>

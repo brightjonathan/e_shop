@@ -1,10 +1,13 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { assets } from "@/public/assets/assets";
 
+
 const HomeSlide = () => {
+
+  
 
     const sliderData = [
     {
@@ -34,6 +37,7 @@ const HomeSlide = () => {
   ];
 
   const [currentSlide, setCurrentSlide] = useState(0);
+
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -75,6 +79,7 @@ const HomeSlide = () => {
                 className="md:w-72 w-48"
                 src={slide.imgSrc}
                 alt={`Slide ${index + 1}`}
+                loading="eager"
               />
             </div>
           </div>

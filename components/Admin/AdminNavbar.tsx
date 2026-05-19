@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useAppContext } from "@/Context/AppContextProvider";
 import styles from "@/css/AdminNavbar.module.scss";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { FaUserCircle } from "react-icons/fa";
 import {
   HiHome,
@@ -15,6 +15,8 @@ import {
   HiMenuAlt2,
   HiX,
 } from "react-icons/hi";
+import { handleSignOut } from "../HandleSignOut";
+import { signOutUser } from "@/lib/Actions/UserAuth.action";
 
 const navLinks = [
   { href: "/admin", label: "Home", icon: HiHome },
@@ -26,9 +28,11 @@ const navLinks = [
 const AdminNavbar = () => {
   const { user } = useAppContext();
   const pathname = usePathname();
+   const router = useRouter();
   const [isOpen, setIsOpen] = useState(true);
 
   const displayName = user?.displayName ?? user?.email?.split("@")[0] ?? "Admin";
+  
 
   return (
     <>
@@ -112,7 +116,7 @@ const AdminNavbar = () => {
         <div className={styles.spacer} />
 
         {/* Sign out */}
-        <div className={styles.footer}>
+        <div className={styles.footer} onClick={() => handleSignOut(signOutUser, router)}>
           <div className={styles.divider} />
           <button className={styles.signOutBtn}>
             <HiLogout size={18} />
@@ -125,59 +129,3 @@ const AdminNavbar = () => {
 };
 
 export default AdminNavbar;
-
-
-
-
-// "use client"
-
-// import { useAppContext } from "@/Context/AppContextProvider";
-// import styles from "@/css/AdminNavbar.module.scss";
-// import '@/css/globalScss.css'
-// import Link from "next/link";
-// import { FaUserCircle } from "react-icons/fa";
-
-
-// const activeLink = ({ isActive }) => (isActive ? `${styles.active}` : "");
-
-
-// const AdminNavbar = () => {
-
-//   const { user } = useAppContext();
-//   return (
-//     <div className={styles.navbar}>
-//       <div className={styles.user}>
-//         <FaUserCircle size={40} color="#fff" />
-//         <h4>Admin: {user?.displayName ?? user?.email?.split("@")[0] ?? "Admin"}</h4>
-//         <p>{user?.email}</p>
-//       </div>
-//       <nav>
-//         <ul>
-//           <li>
-//             <Link href="/admin" className={activeLink}>
-//               Home
-//             </Link>
-//           </li>
-//           <li>
-//             <Link href="/admin/all-products" className={activeLink}>
-//               All Products
-//             </Link>
-//           </li>
-//           <li>
-//             <Link href="#" className={activeLink}>
-//               Add Product
-//             </Link>
-//           </li>
-//           <li>
-//             <Link href="/admin/orders" className={activeLink}>
-//               Orders
-//             </Link>
-//           </li>
-//         </ul>
-//         <button className="text-center">sign out</button>
-//       </nav>
-//     </div>
-//   )
-// }
-
-// export default AdminNavbar;

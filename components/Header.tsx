@@ -2,7 +2,6 @@
 import { useState, useEffect } from "react";
 import { useRouter} from "next/navigation";
 import { assets } from "@/public/assets/assets";
-import toast from "react-hot-toast";
 import Link from "next/link";
 import Image from "next/image";
 import HamX from "./HamX";
@@ -12,6 +11,7 @@ import AdminOnlyRoute from "./AdminOnlyRoute";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/lib/Firebase/client";
 import { signOutUser } from "@/lib/Actions/UserAuth.action";
+import { handleSignOut } from "./HandleSignOut";
 
 
 const Header = () => {
@@ -47,22 +47,6 @@ const Header = () => {
     setUserOpen((prev) => !prev);
   };
 
-  const handleSignOut = async () => {
-    if (window.confirm("Are you sure you want to sign out?")) {
-      try {
-      await signOutUser();
-      setUser(null);
-      setDisplayName("");
-      setUserOpen(false);
-      toast.success("Signed out successfully!");
-      router.push("/");
-    } catch (error) {
-      toast.error("Failed to sign out. Please try again.");
-      console.log(error);
-    }
-        
-    }
-  };
 
   return (
     <nav className="flex items-center justify-between px-6 md:px-16 lg:px-32 py-3 text-white bg-black">
@@ -165,7 +149,7 @@ const Header = () => {
                 </AdminOnlyRoute>
 
                 <button
-                  onClick={handleSignOut}
+                   onClick={() => handleSignOut(signOutUser, router)}
                   className="hover:text-gray-400 transition"
                 >
                   Sign Out

@@ -22,10 +22,10 @@ export const AppContextProvider = ({
     // Listen for login/logout changes
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
       if (firebaseUser) {
-        console.log("User signed in:", firebaseUser.email);
+        // console.log("User signed in:", firebaseUser.email);
         setUser(firebaseUser);
       } else {
-        console.log("User signed out");
+        // console.log("User signed out");
         setUser(null);
       }
     });
