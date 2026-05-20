@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "firebase": "^12.13.0",
+    "firebase-admin": "^13.10.0",
     "formik": "^2.4.9",
     "next": "16.2.6",
     "notiflix": "^3.2.8",

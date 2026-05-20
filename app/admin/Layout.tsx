@@ -1,7 +1,8 @@
 "use clint"
 
 import Navbar from "@/components/Admin/AdminNavbar";
-import styles from "@/css/Admin.module.scss";
+import AdminGuard from "@/components/AdminGuide";
+// import styles from "@/css/Admin.module.scss";
 // import '@/css/globalScss.css'
 
 export default function AdminLayout({
@@ -20,7 +21,9 @@ export default function AdminLayout({
 
   {/* Main content — takes remaining space, scrolls independently */}
   <main style={{ flex: 1, height: '100%', overflowY: 'auto' }}>
+    <AdminGuard>
     {children}  {/* ← ProductForm lives in here */}
+    </AdminGuard>
   </main>
 
 </div>

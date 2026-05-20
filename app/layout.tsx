@@ -40,3 +40,6 @@ export default function RootLayout({
     </html>
   );
 }
+
+
+// https://claude.ai/share/8cb33976-5686-4db4-83d3-ec1fa729eef2
