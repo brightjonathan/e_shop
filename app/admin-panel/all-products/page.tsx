@@ -281,7 +281,7 @@ export default function AllProductsPage() {
           <input
             className={styles.searchInput}
             type="text"
-            placeholder="Search name or category…"
+            placeholder="Search Product Name or Category…"
             value={search}
             onChange={(e) => handleSearch(e.target.value)}
             autoComplete="off"
