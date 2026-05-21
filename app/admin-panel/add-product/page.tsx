@@ -73,7 +73,7 @@ export default function AddProductPage() {
     }
 
      if (res.success) {
-      router.push("/admin/all-products"); // 👈 redirect here
+      router.push("/admin-panel/all-products"); // 👈 redirect here
     }
   };
 

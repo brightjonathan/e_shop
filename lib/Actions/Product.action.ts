@@ -4,6 +4,7 @@ import {
   collection,
   doc,
   getDoc,
+  serverTimestamp,
   setDoc,
   Timestamp,
 } from "firebase/firestore";
@@ -31,7 +32,7 @@ export const addProduct = async (product: ProductType) => {
         id: isAdmin ? user?.uid : "***",
         email: isAdmin ? user?.email : "***",
       },
-      CreatedAt: Timestamp.now().toDate(),
+      createdAt: serverTimestamp(),
     };
 
     await addDoc(collection(db, "PRODUCTS"), productWithAuthor);
@@ -99,3 +100,5 @@ export const updateProduct = async (
     };
   }
 };
+
+
