@@ -17,7 +17,7 @@ export default function AdminGuard({
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (!user) {
-        router.replace("/");
+        router.push("/not-found");
         return;
       }
 
@@ -26,7 +26,7 @@ export default function AdminGuard({
         const isAdminEmail = user.email ===  process.env.NEXT_PUBLIC_ADMIN_EMAIL;
 
         if (!isAdminClaim && !isAdminEmail) {
-          router.replace("/");
+          router.push("/not-found");
         } else {
           setLoading(false);
         }

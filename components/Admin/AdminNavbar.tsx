@@ -19,10 +19,10 @@ import { handleSignOut } from "../HandleSignOut";
 import { signOutUser } from "@/lib/Actions/UserAuth.action";
 
 const navLinks = [
-  { href: "/admin", label: "Home", icon: HiHome },
-  { href: "/admin/all-products", label: "All Products", icon: HiCube },
-  { href: "/admin/add-product", label: "Add Product", icon: HiPlusCircle },
-  { href: "/admin/orders", label: "Orders", icon: HiClipboardList },
+  { href: "/admin-panel", label: "Home", icon: HiHome },
+  { href: "/admin-panel/all-products", label: "All Products", icon: HiCube },
+  { href: "/admin-panel/add-product", label: "Add Product", icon: HiPlusCircle },
+  { href: "/admin-panel/orders", label: "Orders", icon: HiClipboardList },
 ];
 
 const AdminNavbar = () => {
@@ -86,8 +86,8 @@ const AdminNavbar = () => {
           <ul className={styles.navList}>
             {navLinks.map(({ href, label, icon: Icon }) => {
               const isActive =
-                href === "/admin"
-                  ? pathname === "/admin"
+                href === "/admin-panel"
+                  ? pathname === "/admin-panel"
                   : pathname.startsWith(href);
 
               return (

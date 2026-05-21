@@ -1,6 +1,6 @@
 "use client";
 
-import Home from "@/app/admin/home/page";
+import Home from "@/app/admin-panel/home/page";
 
 
 
