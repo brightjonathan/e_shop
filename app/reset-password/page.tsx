@@ -1,18 +1,18 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import Link from "next/link";
 import { AiOutlineMail} from 'react-icons/ai';
 import { ResetPassword } from "@/lib/Actions/UserAuth.action";
 import { resetPasswordSchema } from "@/components/SchemeIndex";
 import { useFormik } from "formik";
+import AuthRedirect from "@/components/AuthRedirect";
 
 const Page = () => {
 
   const [loadingState, setLoadingState] = useState(false);
-  const router = useRouter();
+
 
 
    const onSubmit = async (
@@ -45,6 +45,7 @@ const Page = () => {
 
 
   return (
+    <AuthRedirect>
     <div className='pt-15'>
   <div className='max-w-200 m-auto px-4'>
     <div className=' dark:bg-[#e8edea] px-10 py-8 rounded-lg text-black'>
@@ -94,6 +95,7 @@ const Page = () => {
     </div>
   </div>
 </div>
+</AuthRedirect>
   )
 }
 

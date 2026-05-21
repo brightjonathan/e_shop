@@ -123,7 +123,7 @@ const Header = () => {
                 <p className="text-sm text-gray-400">{user?.email}</p>
 
                 <Link
-                  href="/profile"
+                  href="/user-profile"
                   className="hover:text-gray-400 transition"
                   onClick={() => setUserOpen(false)}
                 >

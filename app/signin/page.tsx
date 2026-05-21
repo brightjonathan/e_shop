@@ -10,6 +10,7 @@ import {AiFillEyeInvisible, AiFillEye, AiOutlineMail} from 'react-icons/ai';
 import { loginUser } from '@/lib/Actions/UserAuth.action';
 import Loading from '@/components/Loading';
 import { loginSchema } from '@/components/SchemeIndex';
+import AuthRedirect from '@/components/AuthRedirect';
 
 const Page = () => {
 
@@ -58,7 +59,7 @@ const Page = () => {
  
 
   return (
-    <>
+    <AuthRedirect>
     {loadingState && <Loading />}
      <div className='pt-15'>
   
@@ -135,7 +136,7 @@ const Page = () => {
       </div>
     </div>
   </div>
-  </>
+  </AuthRedirect>
   )
 }
 

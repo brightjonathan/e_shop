@@ -11,6 +11,7 @@ import { BasicSchema } from '@/components/SchemeIndex';
 import { registerUser } from '@/lib/Actions/UserAuth.action';
 import toast from 'react-hot-toast';
 import Loading from '@/components/Loading';
+import AuthRedirect from '@/components/AuthRedirect';
 
 const Page = () => {
 
@@ -84,7 +85,7 @@ const Page = () => {
 
 
   return (
-    <>
+    <AuthRedirect>
     {loadingState && <Loading />}
     <div className='pt-2'>
 
@@ -192,7 +193,7 @@ const Page = () => {
    </div>
  </div>
 </div>
-  </>
+  </AuthRedirect>
   )
 }
 
