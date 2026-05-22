@@ -131,7 +131,7 @@ const Header = () => {
         absolutely-positioned dropdown and pointer events stop working.
       */}
       <nav
-        className={`fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-5 md:px-12 lg:px-24 h-16 bg-black/95 backdrop-blur-md border-b border-white/5 transition-shadow duration-300 overflow-visible ${
+        className={`fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-5 md:px-12 lg:px-24 h-16 bg-[#0f2111] backdrop-blur-md border-b border-white/5 transition-shadow duration-300 overflow-visible ${
           scrolled ? "shadow-[0_4px_24px_rgba(0,0,0,0.5)]" : ""
         }`}
       >

@@ -8,5 +8,7 @@ WORK ON ADMIN ALL-PRODUCT                        //completed
 WORK ON PROTECTING THE SIGN IN, SIGN OUT AND RE-SET PASSWORD THE (ONLY TIME TO ACCESS THEM IS WHEN YOU LOGOUT OUT)                                            //completed
 WORK ON YOUR PROFILE                            //completed
 WORK ON THE HEADER UI AND LOGIC                 //completed
-WORK ON THE HERO-SECTION UI 
+WORK ON THE SIGN,SIGNOUT,RESET UI               //completed
+WORK ON THE HERO-SECTION UI                     //completed
 WORKING ON THE THE PRODUCT SECTION 
+
