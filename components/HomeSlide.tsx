@@ -42,6 +42,8 @@ const sliderData = [
 ];
 
 const HomeSlide = () => {
+
+  
   const [currentSlide, setCurrentSlide] = useState(0);
   const [paused, setPaused] = useState(false);
   const [animating, setAnimating] = useState(false);
