@@ -10,6 +10,7 @@ import {
 } from "@/lib/Actions/publicProduct.action";
 import { ProductType } from "@/types/Product"; 
 import Image from "next/image";
+import Link from "next/link";
 
 // ── Constants ──────────────────────────────────────────────
 const DEFAULT_PER_PAGE = 50;
@@ -92,6 +93,8 @@ interface CardProps {
 
 const ProductCard: React.FC<CardProps> = ({ product }) => {
   const { productName, imageURL, price, category, description } = product;
+  console.log(product.id);
+  
 
 
   const discountPrice = price + (price * 0.1);
@@ -103,11 +106,13 @@ const ProductCard: React.FC<CardProps> = ({ product }) => {
     <article className={styles.card} aria-label={productName}>
       {/* Image */}
       <div className={styles.cardImg}>
+       <Link href={`/product-details/${product.id}`} aria-label={`View details for ${productName}`}>
         {imageURL ? (
           <Image src={imageURL} alt={productName} loading="lazy" width={300} height={300} />
         ) : (
           <div className={styles.imgPlaceholder}>🛍️</div>
         )}
+        </Link>
 
         {/* Discount badge */}
     

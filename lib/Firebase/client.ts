@@ -1,4 +1,3 @@
-"use client";
 
 
 import { initializeApp, getApps, getApp } from "firebase/app";
@@ -33,3 +32,4 @@ export const analytics =
     : null;
 
 export default app;
+

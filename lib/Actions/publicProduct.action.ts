@@ -5,7 +5,7 @@ import {
   orderBy,
   DocumentData,
 } from "firebase/firestore";
-import { db } from "@/lib/Firebase/client"; 
+import { db } from "@/lib/Firebase/client";
 import { ProductType } from "@/types/Product"; 
 
 
