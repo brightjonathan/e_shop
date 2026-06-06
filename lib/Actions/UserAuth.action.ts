@@ -30,8 +30,26 @@ export const loginUser = async (email: string, password: string) => {
 
 
 // reset password
+// export const ResetPassword = async (email: string) => {
+//   await sendPasswordResetEmail(auth, email);
+// };
+
 export const ResetPassword = async (email: string) => {
-  await sendPasswordResetEmail(auth, email);
+  try {
+    await sendPasswordResetEmail(auth, email);
+
+    return {
+      success: true,
+      message: "If an account exists for this email, a reset link has been sent.",
+    };
+  } catch (error: any) {
+    console.log(error);
+
+    return {
+      success: false,
+      message: error.message,
+    };
+  }
 };
 
 
