@@ -30,13 +30,3 @@ export default function AdminLayout({
   );
 };
 
-
-//  <div className=''>
-//       <div className=''>
-//         <Navbar />
-//       </div>
-
-//       <div className=''>
-//         {children}
-//       </div>
-//     </div>

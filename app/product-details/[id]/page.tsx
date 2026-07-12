@@ -5,6 +5,8 @@ import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/Firebase/client";
+import Header from "@/components/Header";
+import { useAppContext } from "@/Context/AppContextProvider";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 interface Product {
@@ -33,6 +35,7 @@ export default function ProductDetailsPage() {
 
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
+  const { addToCart } = useAppContext();
 
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
@@ -72,8 +75,9 @@ export default function ProductDetailsPage() {
 
   // ── Add to Cart ──────────────────────────────────────────────────────────
   const handleAddToCart = () => {
+    if (!product) return;
+    addToCart(product, quantity);
     setAddedToCart(true);
-    // TODO: dispatch to your cart store / Firebase cart collection
     setTimeout(() => setAddedToCart(false), 2500);
   };
 
@@ -137,6 +141,8 @@ export default function ProductDetailsPage() {
   // PRODUCT DISPLAY
   // ─────────────────────────────────────────────────────────────────────────
   return (
+    <>
+    <Header/>
     <div className="min-h-screen bg-[#0a0a0a] text-white">
       <style>{`
         @keyframes fadeUp {
@@ -330,5 +336,9 @@ export default function ProductDetailsPage() {
         </div>
       </main>
     </div>
+  </>
   );
 }
+
+
+

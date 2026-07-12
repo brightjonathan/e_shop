@@ -15,7 +15,7 @@ import { signOutUser } from "@/lib/Actions/UserAuth.action";
 import { handleSignOut } from "./HandleSignOut";
 
 const Header = () => {
-  const { user, setUser } = useAppContext();
+  const { user, setUser, cartCount } = useAppContext();
   const router = useRouter();
 
   const [isOpen, setIsOpen] = useState(false);
@@ -126,10 +126,6 @@ const Header = () => {
   return (
     <>
       {/* ── Fixed Navbar ──────────────────────────────────────────────────── */}
-      {/*
-        overflow-visible is critical — without it the fixed nav clips the
-        absolutely-positioned dropdown and pointer events stop working.
-      */}
       <nav
         className={`fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-5 md:px-12 lg:px-24 h-16 bg-[#0f2111] backdrop-blur-md border-b border-white/5 transition-shadow duration-300 overflow-visible ${
           scrolled ? "shadow-[0_4px_24px_rgba(0,0,0,0.5)]" : ""
@@ -162,20 +158,22 @@ const Header = () => {
           {/* Cart */}
           <Link
             href="/cart"
-            className="flex items-center justify-center w-9 h-9 rounded-full hover:bg-white/10 transition-colors duration-200"
-            aria-label="Cart"
+            className="relative flex items-center justify-center w-9 h-9 rounded-full hover:bg-white/10 transition-colors duration-200"
+            aria-label={`Cart, ${cartCount} item${cartCount === 1 ? "" : "s"}`}
           >
             <Image src={assets.cart_icon} alt="cart" width={22} height={22} />
+            {cartCount > 0 && (
+              <span
+                className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full bg-[#fce3c7] text-black text-[10px] font-semibold leading-none"
+                aria-hidden="true"
+              >
+                {cartCount > 99 ? "99+" : cartCount}
+              </span>
+            )}
           </Link>
 
-          {/*
-            User button + dropdown are siblings inside ONE ref'd wrapper.
-            This means outside-click only fires when the user clicks
-            completely outside this wrapper — NOT when they click a link
-            inside the dropdown.
-          */}
+          {/* User button + dropdown */}
           <div className="relative" ref={userMenuRef}>
-            {/* User button */}
             <button
               onClick={() => setUserOpen((prev) => !prev)}
               className="flex items-center gap-2 rounded-full hover:ring-2 hover:ring-[#fce3c7]/30 transition-all duration-200 p-0.5"
@@ -340,3 +338,8 @@ const Header = () => {
 };
 
 export default Header;
+
+
+
+
+

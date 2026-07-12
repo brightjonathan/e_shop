@@ -10,5 +10,6 @@ WORK ON YOUR PROFILE                            //completed
 WORK ON THE HEADER UI AND LOGIC                 //completed
 WORK ON THE SIGN,SIGNOUT,RESET UI               //completed
 WORK ON THE HERO-SECTION UI                     //completed
-WORKING ON THE THE PRODUCT SECTION 
+WORKING ON THE THE PRODUCT SECTION              //completed
+WORKING ON THE CART SECTTION
 

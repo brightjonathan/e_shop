@@ -8,9 +8,11 @@ import {
   paginateProducts,
   getTotalPages,
 } from "@/lib/Actions/publicProduct.action";
-import { ProductType } from "@/types/Product"; 
+import { ProductType } from "@/types/Product";
+import { useAppContext } from "@/Context/AppContextProvider";
 import Image from "next/image";
 import Link from "next/link";
+import toast from "react-hot-toast";
 
 // ── Constants ──────────────────────────────────────────────
 const DEFAULT_PER_PAGE = 50;
@@ -41,6 +43,14 @@ const CartIcon = () => (
     stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <circle cx="9" cy="21" r="1" /><circle cx="20" cy="21" r="1" />
     <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+  </svg>
+);
+
+// ── Check Icon (shown briefly after adding) ─────────────────
+const CheckIcon = () => (
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="20 6 9 17 4 12" />
   </svg>
 );
 
@@ -93,31 +103,44 @@ interface CardProps {
 
 const ProductCard: React.FC<CardProps> = ({ product }) => {
   const { productName, imageURL, price, category, description } = product;
-  console.log(product.id);
-  
+  const { addToCart } = useAppContext();
 
-
-  const discountPrice = price + (price * 0.1);
+  const discountPrice = price + price * 0.1;
   const amountSaved = discountPrice - price;
   const discountPercentage = Math.round((amountSaved / price) * 100);
 
+  // "just added" feedback state — resets itself after a moment
+  const [justAdded, setJustAdded] = useState(false);
+
+  const handleAddToCart = useCallback(() => {
+    addToCart(product, 1);
+    setJustAdded(true);
+    toast.success(`${productName} added to cart`, { duration: 1500 });
+  }, [product, addToCart, productName]);
+
+  // Reset the "Added" feedback after a moment
+  useEffect(() => {
+    if (!justAdded) return;
+    const timeout = setTimeout(() => setJustAdded(false), 1500);
+    return () => clearTimeout(timeout);
+  }, [justAdded]);
+
+  
 
   return (
     <article className={styles.card} aria-label={productName}>
       {/* Image */}
       <div className={styles.cardImg}>
-       <Link href={`/product-details/${product.id}`} aria-label={`View details for ${productName}`}>
-        {imageURL ? (
-          <Image src={imageURL} alt={productName} loading="lazy" width={300} height={300} />
-        ) : (
-          <div className={styles.imgPlaceholder}>🛍️</div>
-        )}
+        <Link href={`/product-details/${product.id}`} aria-label={`View details for ${productName}`}>
+          {imageURL ? (
+            <Image src={imageURL} alt={productName} loading="lazy" width={300} height={300} />
+          ) : (
+            <div className={styles.imgPlaceholder}>🛍️</div>
+          )}
         </Link>
 
         {/* Discount badge */}
-    
-          <span className={styles.discountBadge}>{discountPercentage}% off</span>
-        
+        <span className={styles.discountBadge}>{discountPercentage}% off</span>
 
         {/* Category badge */}
         {category && (
@@ -127,8 +150,6 @@ const ProductCard: React.FC<CardProps> = ({ product }) => {
 
       {/* Body */}
       <div className={styles.cardBody}>
-        {/* {category && <span className={styles.cardCategory}>{category}</span>} */}
-
         <h3 className={styles.cardName} title={productName}>
           {shortenText(productName, 40)}
         </h3>
@@ -140,16 +161,21 @@ const ProductCard: React.FC<CardProps> = ({ product }) => {
         {/* Pricing row */}
         <div className={styles.priceRow}>
           <span className={styles.cardPrice}>&#8358;{price.toLocaleString("en-NG")}</span>
-            <span className={styles.originalPrice}>&#8358; {discountPrice.toLocaleString("en-NG")}</span>
+          <span className={styles.originalPrice}>&#8358; {discountPrice.toLocaleString("en-NG")}</span>
         </div>
 
         {/* Money saved */}
-          <p className={styles.moneySaved}>&#8358; {amountSaved.toLocaleString("en-NG")}</p>
+        <p className={styles.moneySaved}>&#8358; {amountSaved.toLocaleString("en-NG")}</p>
 
-        {/* Add to Cart — UI only, no functionality yet */}
-        <button className={styles.cartBtn} type="button" aria-label={`Add ${productName} to cart`}>
-          <CartIcon />
-          Add to Cart
+        {/* Add to Cart */}
+        <button
+          className={styles.cartBtn}
+          type="button"
+          onClick={handleAddToCart}
+          aria-label={`Add ${productName} to cart`}
+        >
+          {justAdded ? <CheckIcon /> : <CartIcon />}
+          {justAdded ? "Added" : "Add to Cart"}
         </button>
       </div>
     </article>
@@ -167,7 +193,6 @@ const Products: React.FC = () => {
 
   useEffect(() => {
     let cancelled = false;
-    // setLoading(true);
     fetchAllProducts().then(({ products, error }) => {
       if (!cancelled) {
         setAllProducts(products);
@@ -212,12 +237,6 @@ const Products: React.FC = () => {
             <button onClick={increasePerPage} disabled={perPage >= MAX_PER_PAGE} aria-label="More per page">+</button>
           </div>
         </div>
-
-        {/* {!loading && (
-          <p className={styles.resultCount}>
-            <strong>{filtered.length}</strong> {filtered.length === 1 ? "product" : "products"} found
-          </p>
-        )} */}
       </div>
 
       {/* Content */}
@@ -261,4 +280,13 @@ const Products: React.FC = () => {
 };
 
 export default Products;
+
+
+
+
+
+
+
+
+
 
