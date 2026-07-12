@@ -49,6 +49,9 @@ const CartRow: React.FC<{ item: CartItem }> = ({ item }) => {
       <div className="flex-1 min-w-0">
         <p className="text-white text-sm font-medium truncate">{item.productName}</p>
         <p className="text-white/40 text-xs mt-0.5">{formatNaira(item.price)} each</p>
+        {item.quantity >= (item.stock ?? Infinity) && (
+          <p className="text-amber-400 text-[11px] mt-0.5">Max available in stock</p>
+        )}
       </div>
 
       {/* Quantity stepper */}
@@ -63,7 +66,8 @@ const CartRow: React.FC<{ item: CartItem }> = ({ item }) => {
         <span className="w-6 text-center text-white text-sm font-medium">{item.quantity}</span>
         <button
           onClick={() => updateCartQuantity(item.id, item.quantity + 1)}
-          className="w-7 h-7 flex items-center justify-center rounded-full bg-white/10 text-white/70 hover:bg-white/20 hover:text-white transition-colors"
+          disabled={item.quantity >= (item.stock ?? Infinity)}
+          className="w-7 h-7 flex items-center justify-center rounded-full bg-white/10 text-white/70 hover:bg-white/20 hover:text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-white/10"
           aria-label={`Increase quantity of ${item.productName}`}
         >
           <PlusIcon />
@@ -170,3 +174,11 @@ const CartPage: React.FC = () => {
 };
 
 export default CartPage;
+
+
+
+
+
+
+
+

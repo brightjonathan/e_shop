@@ -3,23 +3,31 @@
 import Productform from "@/components/Admin/productform/Productform";
 import { useRouter } from "next/navigation";
 
-import {
-  getProduct,
-  updateProduct,
-} from  "@/lib/Actions/Product.action";
+import { getProduct, updateProduct } from "@/lib/Actions/Product.action";
 
-import { uploadImage } from "@/lib/uploadImage";
+import { uploadMultipleImages } from "@/lib/uploadImage";
 
 import { ProductType } from "@/types/Product";
 
-import {
-  useEffect,
-  useState,
-} from "react";
+import { useEffect, useState } from "react";
 
 import { useParams } from "next/navigation";
 
-import toast from 'react-hot-toast';
+import toast from "react-hot-toast";
+
+const MIN_IMAGES = 4;
+const MAX_IMAGES = 8;
+
+const emptyProduct: ProductType = {
+  productName: "",
+  imageURL: "",
+  imageURLs: [],
+  price: 0,
+  stock: 0,
+  category: "",
+  brand: "",
+  description: "",
+};
 
 export default function EditProductPage() {
   const params = useParams();
@@ -27,66 +35,88 @@ export default function EditProductPage() {
 
   const id = params.id as string;
 
-  const [product, setProduct] =
-    useState<ProductType>({
-      productName: "",
-      imageURL: "",
-      price: 0,
-      category: "",
-      brand: "",
-      description: "",
-    });
+  const [product, setProduct] = useState<ProductType>(emptyProduct);
+  const [fetching, setFetching] = useState(true);
 
-  const [progress, setProgress] =
-    useState(0);
-
-  const [loading, setLoading] =
-    useState(false);
+  const [progress, setProgress] = useState(0);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const fetchProduct =
-      async () => {
-        const data =
-          await getProduct(id);
+    const fetchProduct = async () => {
+      setFetching(true);
+      const data = await getProduct(id);
 
-        if (data) {
-          setProduct(data as ProductType);
-        }
-      };
+      if (data) {
+        const raw = data as ProductType;
+
+        // Normalize legacy products that predate the stock/imageURLs
+        // fields — fall back to their single old imageURL as the first
+        // (and only) gallery image so editing them doesn't crash or
+        // silently wipe their photo.
+        setProduct({
+          ...raw,
+          stock: raw.stock ?? 0,
+          imageURLs:
+            raw.imageURLs && raw.imageURLs.length > 0
+              ? raw.imageURLs
+              : raw.imageURL
+              ? [raw.imageURL]
+              : [],
+        });
+      }
+      setFetching(false);
+    };
 
     fetchProduct();
   }, [id]);
 
-  const handleImage = async (
-    e: any
-  ) => {
-    const file = e.target.files[0];
+  const handleImages = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files ?? []);
+    if (files.length === 0) return;
 
-    if (!file) return;
+    const remainingSlots = MAX_IMAGES - product.imageURLs.length;
+    if (remainingSlots <= 0) {
+      toast.error(`You can only have up to ${MAX_IMAGES} images.`);
+      e.target.value = "";
+      return;
+    }
 
-    const imageURL = await uploadImage(
-      file,
-      setProgress
-    );
+    const filesToUpload = files.slice(0, remainingSlots);
+    if (files.length > remainingSlots) {
+      toast.error(`Only ${remainingSlots} more image${remainingSlots === 1 ? "" : "s"} allowed — the rest were skipped.`);
+    }
 
-    setProduct({
-      ...product,
-      imageURL,
-    });
+    try {
+      const newUrls = await uploadMultipleImages(filesToUpload, setProgress);
+      setProduct((prev) => ({
+        ...prev,
+        imageURLs: [...prev.imageURLs, ...newUrls],
+      }));
+    } catch (err) {
+      console.error(err);
+      toast.error("One or more images failed to upload. Please try again.");
+    } finally {
+      setTimeout(() => setProgress(0), 800);
+      e.target.value = "";
+    }
   };
 
-  const handleSubmit = async (
-    e: React.FormEvent
-  ) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (product.imageURLs.length < MIN_IMAGES) {
+      toast.error(`Please have at least ${MIN_IMAGES} images.`);
+      return;
+    }
 
     setLoading(true);
 
-    const res =
-      await updateProduct(
-        id,
-        product
-      );
+    const finalProduct: ProductType = {
+      ...product,
+      imageURL: product.imageURLs[0],
+    };
+
+    const res = await updateProduct(id, finalProduct);
 
     setLoading(false);
 
@@ -96,9 +126,13 @@ export default function EditProductPage() {
       toast.error(res.message);
     }
     if (res.success) {
-      router.push("/admin-panel/all-products"); // 👈 redirect here
+      router.push("/admin-panel/all-products");
     }
   };
+
+  if (fetching) {
+    return <p style={{ padding: 24, color: "#999" }}>Loading product…</p>;
+  }
 
   return (
     <Productform
@@ -107,9 +141,12 @@ export default function EditProductPage() {
       onSubmit={handleSubmit}
       progress={progress}
       loading={loading}
-      handleImage={handleImage}
+      handleImages={handleImages}
       buttonText="Update Product"
       title="Edit Product"
     />
   );
 }
+
+
+

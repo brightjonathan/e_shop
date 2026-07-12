@@ -3,8 +3,10 @@
 import styles from "./Productform.module.scss";
 import { categories } from "./Categories";
 import { ProductType } from "@/types/Product";
-import { useState } from "react";
 import Image from "next/image";
+
+const MIN_IMAGES = 4;
+const MAX_IMAGES = 8;
 
 interface Props {
   product: ProductType;
@@ -12,7 +14,7 @@ interface Props {
   onSubmit: (e: React.FormEvent) => void;
   loading: boolean;
   progress: number;
-  handleImage: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  handleImages: (e: React.ChangeEvent<HTMLInputElement>) => void;
   buttonText: string;
   title: string;
 }
@@ -23,29 +25,38 @@ export default function Productform({
   onSubmit,
   loading,
   progress,
-  handleImage,
+  handleImages,
   buttonText,
   title,
 }: Props) {
-  const [preview, setPreview] = useState<string | null>(null);
-  const [imgLoaded, setImgLoaded] = useState(false);
-//   const [priceValue, setPriceValue] = useState<string>(
-//     product.price !== 0 ? String(product.price) : ""
-//   );
-
-  const handleImageWithPreview = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setImgLoaded(false);
-      setPreview(URL.createObjectURL(file));
-    }
-    handleImage(e);
-  };
+  const imageCount = product.imageURLs?.length ?? 0;
+  const hasMinImages = imageCount >= MIN_IMAGES;
+  const atMaxImages = imageCount >= MAX_IMAGES;
+  const isUploading = progress > 0 && progress < 100;
 
   const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const raw = e.target.value;
-    // setPriceValue(raw);
     setProduct({ ...product, price: raw === "" ? 0 : Number(raw) });
+  };
+
+  const handleStockChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value;
+    setProduct({ ...product, stock: raw === "" ? 0 : Number(raw) });
+  };
+
+  const removeImage = (index: number) => {
+    setProduct({
+      ...product,
+      imageURLs: product.imageURLs.filter((_, i) => i !== index),
+    });
+  };
+
+  const makeCover = (index: number) => {
+    if (index === 0) return;
+    const reordered = [...product.imageURLs];
+    const [selected] = reordered.splice(index, 1);
+    reordered.unshift(selected);
+    setProduct({ ...product, imageURLs: reordered });
   };
 
   return (
@@ -78,18 +89,23 @@ export default function Productform({
               />
             </div>
 
-            {/* Image Upload */}
+            {/* Image Gallery Upload */}
             <div className={styles.inputGroup}>
               <label className={styles.label}>
                 <span className={styles.labelIcon}>🖼️</span>
-                Product Image
+                Product Images
+                <span style={{ fontWeight: 400, opacity: 0.6, marginLeft: 6 }}>
+                  ({imageCount}/{MIN_IMAGES} minimum, {MAX_IMAGES} max)
+                </span>
               </label>
 
               <label className={styles.fileLabel}>
                 <input
                   type="file"
                   accept="image/*"
-                  onChange={handleImageWithPreview}
+                  multiple
+                  disabled={atMaxImages || isUploading}
+                  onChange={handleImages}
                   className={styles.fileInputHidden}
                 />
                 <span className={styles.fileBtn}>
@@ -98,34 +114,115 @@ export default function Productform({
                     <polyline points="17 8 12 3 7 8" />
                     <line x1="12" y1="3" x2="12" y2="15" />
                   </svg>
-                  Choose Image
+                  {atMaxImages ? "Max images reached" : "Add Images"}
                 </span>
                 <span className={styles.filePlaceholder}>
-                  {preview ? "Image selected ✓" : "No file chosen"}
+                  Select multiple files at once, or add more in batches
                 </span>
               </label>
 
-              {/* Animated Image Preview */}
-              {preview && (
-                <div className={styles.previewContainer}>
-                  {!imgLoaded && (
-                    <div className={styles.imgSkeleton}>
-                      <div className={styles.shimmer} />
+              {/* Gallery preview grid */}
+              {imageCount > 0 && (
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(auto-fill, minmax(90px, 1fr))",
+                    gap: 10,
+                    marginTop: 12,
+                  }}
+                >
+                  {product.imageURLs.map((url, index) => (
+                    <div
+                      key={url + index}
+                      style={{
+                        position: "relative",
+                        borderRadius: 10,
+                        overflow: "hidden",
+                        aspectRatio: "1 / 1",
+                        border: index === 0 ? "2px solid #fce3c7" : "1px solid rgba(255,255,255,0.1)",
+                      }}
+                    >
+                      <Image
+                        src={url}
+                        alt={`Product image ${index + 1}`}
+                        fill
+                        style={{ objectFit: "cover" }}
+                      />
+
+                      {index === 0 && (
+                        <span
+                          style={{
+                            position: "absolute",
+                            top: 4,
+                            left: 4,
+                            fontSize: 10,
+                            fontWeight: 600,
+                            background: "#fce3c7",
+                            color: "#000",
+                            padding: "2px 6px",
+                            borderRadius: 999,
+                          }}
+                        >
+                          Cover
+                        </span>
+                      )}
+
+                      <button
+                        type="button"
+                        onClick={() => removeImage(index)}
+                        aria-label={`Remove image ${index + 1}`}
+                        style={{
+                          position: "absolute",
+                          top: 4,
+                          right: 4,
+                          width: 20,
+                          height: 20,
+                          borderRadius: "50%",
+                          background: "rgba(0,0,0,0.7)",
+                          color: "#fff",
+                          border: "none",
+                          cursor: "pointer",
+                          fontSize: 12,
+                          lineHeight: 1,
+                        }}
+                      >
+                        ✕
+                      </button>
+
+                      {index !== 0 && (
+                        <button
+                          type="button"
+                          onClick={() => makeCover(index)}
+                          style={{
+                            position: "absolute",
+                            bottom: 4,
+                            left: 4,
+                            right: 4,
+                            fontSize: 9,
+                            padding: "3px 4px",
+                            borderRadius: 6,
+                            background: "rgba(0,0,0,0.7)",
+                            color: "#fff",
+                            border: "none",
+                            cursor: "pointer",
+                          }}
+                        >
+                          Make cover
+                        </button>
+                      )}
                     </div>
-                  )}
-                  <Image
-                    src={preview}
-                    alt="Preview"
-                    className={`${styles.previewImg} ${imgLoaded ? styles.previewImgVisible : ""}`}
-                    onLoad={() => setImgLoaded(true)}
-                    width={200}
-                    height={200}
-                  />
+                  ))}
                 </div>
               )}
 
+              {!hasMinImages && imageCount > 0 && (
+                <p style={{ fontSize: 12, color: "#f59e0b", marginTop: 8 }}>
+                  Add {MIN_IMAGES - imageCount} more image{MIN_IMAGES - imageCount === 1 ? "" : "s"} to continue.
+                </p>
+              )}
+
               {/* Progress Bar */}
-              {progress > 0 && progress < 100 && (
+              {isUploading && (
                 <div className={styles.progressWrap}>
                   <div className={styles.progressHeader}>
                     <span>Uploading...</span>
@@ -144,7 +241,7 @@ export default function Productform({
               )}
             </div>
 
-            {/* Two-column row: Price + Category */}
+            {/* Three-column row: Price + Stock + Category */}
             <div className={styles.row}>
               <div className={styles.inputGroup}>
                 <label className={styles.label}>
@@ -159,11 +256,28 @@ export default function Productform({
                     placeholder="0.00"
                     min="0"
                     step="0.01"
-                    value={product.price !== 0 ? product.price.toString() : ""}
+                    value={product.price ? product.price.toString() : ""}
                     onChange={handlePriceChange}
                     required
                   />
                 </div>
+              </div>
+
+              <div className={styles.inputGroup}>
+                <label className={styles.label}>
+                  <span className={styles.labelIcon}>📊</span>
+                  Stock
+                </label>
+                <input
+                  className={styles.input}
+                  type="number"
+                  placeholder="0"
+                  min="0"
+                  step="1"
+                  value={product.stock ? product.stock.toString() : ""}
+                  onChange={handleStockChange}
+                  required
+                />
               </div>
 
               <div className={styles.inputGroup}>
@@ -227,7 +341,7 @@ export default function Productform({
             <button
               className={styles.button}
               type="submit"
-              disabled={loading}
+              disabled={loading || isUploading || !hasMinImages}
             >
               {loading ? (
                 <span className={styles.spinner} />
@@ -246,4 +360,8 @@ export default function Productform({
     </div>
   );
 }
+
+
+
+
 

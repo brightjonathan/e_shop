@@ -13,7 +13,9 @@ interface Product {
   id: string;
   productName: string;
   imageURL: string;
+  imageURLs?: string[];
   price: number;
+  stock?: number;
   category: string;
   brand: string;
   description: string;
@@ -43,6 +45,7 @@ export default function ProductDetailsPage() {
   const [quantity, setQuantity] = useState(1);
   const [addedToCart, setAddedToCart] = useState(false);
   const [wishlist, setWishlist] = useState(false);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
   // ── Fetch from Firebase ──────────────────────────────────────────────────
   useEffect(() => {
@@ -61,7 +64,24 @@ export default function ProductDetailsPage() {
           return;
         }
 
-        setProduct({ id: docSnap.id, ...docSnap.data() } as Product);
+        const raw = { id: docSnap.id, ...docSnap.data() } as Product;
+
+        // Older products only have a single imageURL — fall back to that
+        // as a one-image gallery so this page works for them too.
+        const normalized: Product = {
+          ...raw,
+          imageURLs:
+            raw.imageURLs && raw.imageURLs.length > 0
+              ? raw.imageURLs
+              : raw.imageURL
+              ? [raw.imageURL]
+              : [],
+          stock: raw.stock ?? 0,
+        };
+
+        setProduct(normalized);
+        setSelectedImageIndex(0);
+        setQuantity(1);
       } catch (err) {
         console.error(err);
         setError("Failed to load product. Please try again.");
@@ -73,9 +93,18 @@ export default function ProductDetailsPage() {
     fetchProduct();
   }, [id]);
 
+  // ── Stock-aware helpers ──────────────────────────────────────────────────
+  const stock = product?.stock ?? 0;
+  const isOutOfStock = stock <= 0;
+  const isLowStock = stock > 0 && stock <= 5;
+
+  const increaseQuantity = () => {
+    setQuantity((q) => Math.min(stock, q + 1));
+  };
+
   // ── Add to Cart ──────────────────────────────────────────────────────────
   const handleAddToCart = () => {
-    if (!product) return;
+    if (!product || isOutOfStock) return;
     addToCart(product, quantity);
     setAddedToCart(true);
     setTimeout(() => setAddedToCart(false), 2500);
@@ -198,12 +227,12 @@ export default function ProductDetailsPage() {
       <main className="mx-auto max-w-7xl px-4 py-10 md:px-10">
         <div className="grid gap-12 lg:grid-cols-2 lg:gap-20">
 
-          {/* ── LEFT: Single Image ───────────────────────────────────────── */}
+          {/* ── LEFT: Image Gallery ──────────────────────────────────────── */}
           <div className="scale-in">
             <div className="group relative overflow-hidden rounded-2xl bg-zinc-900 ring-1 ring-white/5">
-              {product.imageURL ? (
+              {product.imageURLs && product.imageURLs.length > 0 ? (
                 <Image
-                  src={product.imageURL}
+                  src={product.imageURLs[selectedImageIndex] ?? product.imageURL}
                   alt={product.productName}
                   width={700}
                   height={700}
@@ -219,6 +248,33 @@ export default function ProductDetailsPage() {
                 </div>
               )}
             </div>
+
+            {/* Thumbnail strip — click to change the main image */}
+            {product.imageURLs && product.imageURLs.length > 1 && (
+              <div className="mt-4 flex gap-3 overflow-x-auto pb-1">
+                {product.imageURLs.map((url, index) => (
+                  <button
+                    key={url + index}
+                    type="button"
+                    onClick={() => setSelectedImageIndex(index)}
+                    aria-label={`Show image ${index + 1} of ${product.productName}`}
+                    aria-current={selectedImageIndex === index}
+                    className={`relative h-20 w-20 shrink-0 overflow-hidden rounded-xl ring-2 transition-all duration-200 ${
+                      selectedImageIndex === index
+                        ? "ring-white opacity-100"
+                        : "ring-white/10 opacity-60 hover:opacity-100 hover:ring-white/30"
+                    }`}
+                  >
+                    <Image
+                      src={url}
+                      alt={`${product.productName} thumbnail ${index + 1}`}
+                      fill
+                      className="object-cover"
+                    />
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* ── RIGHT: Product Info ──────────────────────────────────────── */}
@@ -249,6 +305,13 @@ export default function ProductDetailsPage() {
               </span>
             </div>
 
+            {/* stock indicator */}
+            <p className={`text-sm font-medium ${
+              isOutOfStock ? "text-red-400" : isLowStock ? "text-amber-400" : "text-emerald-400"
+            }`}>
+              {isOutOfStock ? "Out of stock" : `${stock} in stock${isLowStock ? " — almost gone" : ""}`}
+            </p>
+
             <div className="h-px bg-white/5" />
 
             {/* description */}
@@ -269,8 +332,9 @@ export default function ProductDetailsPage() {
                   </button>
                   <span className="w-10 text-center text-sm font-semibold text-white">{quantity}</span>
                   <button
-                    onClick={() => setQuantity((q) => q + 1)}
-                    className="flex h-10 w-10 items-center justify-center rounded-r-xl text-zinc-400 transition hover:bg-white/10 hover:text-white"
+                    onClick={increaseQuantity}
+                    disabled={isOutOfStock || quantity >= stock}
+                    className="flex h-10 w-10 items-center justify-center rounded-r-xl text-zinc-400 transition hover:bg-white/10 hover:text-white disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent"
                   >
                     <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m6-6H6" />
@@ -282,7 +346,8 @@ export default function ProductDetailsPage() {
               <div className="flex gap-3">
                 <button
                   onClick={handleAddToCart}
-                  className={`flex flex-1 items-center justify-center gap-2.5 rounded-2xl py-4 text-sm font-semibold tracking-wide transition-all duration-300 ${
+                  disabled={isOutOfStock}
+                  className={`flex flex-1 items-center justify-center gap-2.5 rounded-2xl py-4 text-sm font-semibold tracking-wide transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-40 ${
                     addedToCart
                       ? "bg-emerald-500 text-white"
                       : "bg-white text-black hover:bg-zinc-100 active:scale-[0.98]"
@@ -295,6 +360,8 @@ export default function ProductDetailsPage() {
                       </svg>
                       Added to Cart!
                     </>
+                  ) : isOutOfStock ? (
+                    "Out of Stock"
                   ) : (
                     <>
                       <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -339,6 +406,7 @@ export default function ProductDetailsPage() {
   </>
   );
 }
+
 
 
 

@@ -12,6 +12,7 @@ export interface CartItem {
   imageURL: string;
   price: number;
   quantity: number;
+  stock: number;
 }
 
 const CART_STORAGE_KEY = "cart_items";
@@ -50,11 +51,19 @@ export const addItemToCart = (
     return items;
   }
 
+  const stock = product.stock ?? 0;
   const existing = items.find((item) => item.id === product.id);
 
   if (existing) {
     return items.map((item) =>
-      item.id === product.id ? { ...item, quantity: item.quantity + quantity } : item
+      item.id === product.id
+        ? {
+            ...item,
+            // Keep stock fresh in case it changed since it was last added
+            stock,
+            quantity: Math.min(item.quantity + quantity, stock),
+          }
+        : item
     );
   }
 
@@ -65,7 +74,8 @@ export const addItemToCart = (
       productName: product.productName,
       imageURL: product.imageURL,
       price: product.price,
-      quantity,
+      stock,
+      quantity: Math.min(quantity, stock),
     },
   ];
 };
@@ -79,7 +89,11 @@ export const updateItemQuantity = (
   quantity: number
 ): CartItem[] => {
   if (quantity <= 0) return removeItemFromCart(items, productId);
-  return items.map((item) => (item.id === productId ? { ...item, quantity } : item));
+  return items.map((item) =>
+    item.id === productId
+      ? { ...item, quantity: Math.min(quantity, item.stock ?? Infinity) }
+      : item
+  );
 };
 
 /** Combines two carts (e.g. a guest cart + a signed-in user's cloud cart), summing quantities for shared items. */
@@ -89,10 +103,16 @@ export const mergeCartItems = (a: CartItem[], b: CartItem[]): CartItem[] => {
     const existing = merged.get(item.id);
     merged.set(
       item.id,
-      existing ? { ...existing, quantity: existing.quantity + item.quantity } : { ...item }
+      existing
+        ? { ...existing, stock: item.stock, quantity: existing.quantity + item.quantity }
+        : { ...item }
     );
   });
-  return Array.from(merged.values());
+  // Clamp after summing, in case combined quantity now exceeds stock
+  return Array.from(merged.values()).map((item) => ({
+    ...item,
+    quantity: Math.min(item.quantity, item.stock ?? Infinity),
+  }));
 };
 
 // ── Derived values ─────────────────────────────────────────
@@ -130,3 +150,6 @@ export const saveCloudCart = async (uid: string, items: CartItem[]): Promise<voi
     console.error("saveCloudCart failed:", err);
   }
 };
+
+
+
