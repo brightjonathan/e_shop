@@ -4,6 +4,8 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 import { useAppContext } from "@/Context/AppContextProvider";
 import { CartItem } from "@/lib/Actions/Cart.action";
 
@@ -94,6 +96,16 @@ const CartRow: React.FC<{ item: CartItem }> = ({ item }) => {
 // ── Main page ────────────────────────────────────────────────
 const CartPage: React.FC = () => {
   const { cart, cartCount, cartTotal, cartSyncing, clearCart, user } = useAppContext();
+  const router = useRouter();
+
+  const handleCheckout = () => {
+    if (!user) {
+      toast.error("Please sign in to check out.");
+      router.push("/signin");
+      return;
+    }
+    router.push("/checkout");
+  };
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] px-5 md:px-12 lg:px-24 py-10">
@@ -161,7 +173,7 @@ const CartPage: React.FC = () => {
               <button
                 type="button"
                 className="mt-2 w-full bg-[#fce3c7] text-black font-semibold text-sm py-3 rounded-xl hover:bg-white transition-colors"
-                onClick={() => alert("Checkout flow goes here")}
+                onClick={handleCheckout}
               >
                 Checkout · {formatNaira(cartTotal)}
               </button>
@@ -174,8 +186,6 @@ const CartPage: React.FC = () => {
 };
 
 export default CartPage;
-
-
 
 
 

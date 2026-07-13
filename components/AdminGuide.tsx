@@ -21,7 +21,8 @@ export default function AdminGuard({
         return;
       }
 
-      user.getIdTokenResult(true).then((token) => { // 👈 true = force refresh
+      user.getIdTokenResult(true).then((token) => { 
+        //true = force refresh
         const isAdminClaim = token.claims.admin === true;
         const isAdminEmail = user.email ===  process.env.NEXT_PUBLIC_ADMIN_EMAIL;
 

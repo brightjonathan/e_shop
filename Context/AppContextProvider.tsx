@@ -21,6 +21,7 @@ import {
 interface AppContextParams {
   user: User | null;
   setUser: (user: User | null) => void;
+  authLoading: boolean;
 
   // Cart
   cart: CartItem[];
@@ -41,6 +42,7 @@ export const AppContextProvider = ({
   children: React.ReactNode;
 }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [authLoading, setAuthLoading] = useState(true);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [cartSyncing, setCartSyncing] = useState(false);
 
@@ -52,6 +54,7 @@ export const AppContextProvider = ({
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
       setUser(firebaseUser ?? null);
+      setAuthLoading(false); // first check has completed, either way
       if (!firebaseUser) {
         // Signed out — next sign-in (even same user) should re-merge/re-fetch
         syncedUidRef.current = null;
@@ -111,6 +114,7 @@ export const AppContextProvider = ({
   const value: AppContextParams = {
     user,
     setUser,
+    authLoading,
     cart,
     cartCount: getCartCount(cart),
     cartTotal: getCartTotal(cart),
@@ -131,8 +135,6 @@ export const useAppContext = (): AppContextParams => {
   }
   return context;
 };
-
-
 
 
 

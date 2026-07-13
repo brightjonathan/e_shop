@@ -43,3 +43,4 @@ export default function RootLayout({
 
 
 // https://claude.ai/share/8cb33976-5686-4db4-83d3-ec1fa729eef2
+// node -e "const fs=require('fs');const key=JSON.parse(fs.readFileSync('serviceAccountKey.json','utf8')).private_key;console.log(Buffer.from(key).toString('base64'))"

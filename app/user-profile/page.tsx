@@ -80,6 +80,7 @@ export default function UserProfilePage() {
   };
 
 
+  // Listen for authentication state changes
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (user) => {
       if (!user) {

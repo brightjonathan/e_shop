@@ -42,5 +42,6 @@ next-env.d.ts
 
 # service account keys
 *.json
+e-shop-38ddb-firebase-adminsdk-fbsvc-6c8ca33948.json
 set-admin-claim.mjs
 
