@@ -11,11 +11,13 @@ import {
   addItemToCart,
   removeItemFromCart,
   updateItemQuantity,
-  mergeCartItems,
   fetchCloudCart,
   saveCloudCart,
   getCartCount,
   getCartTotal,
+  getSyncedSnapshot,
+  setSyncedSnapshot,
+  reconcileCartOnSignIn,
 } from "@/lib/Actions/Cart.action";
 
 interface AppContextParams {
@@ -56,7 +58,8 @@ export const AppContextProvider = ({
       setUser(firebaseUser ?? null);
       setAuthLoading(false); // first check has completed, either way
       if (!firebaseUser) {
-        // Signed out — next sign-in (even same user) should re-merge/re-fetch
+        // Signed out — next sign-in should re-check against the last
+        // synced snapshot (see the reconciliation effect below).
         syncedUidRef.current = null;
       }
     });
@@ -68,7 +71,11 @@ export const AppContextProvider = ({
     setCart(loadCartFromStorage());
   }, []);
 
-  // ── On sign-in: pull the user's cloud cart and merge with guest cart ─
+  // ── On sign-in: reconcile the local cart with the cloud cart using
+  //    the last synced snapshot as a baseline. This adds only what's
+  //    GENUINELY new since that snapshot (e.g. guest items added after
+  //    signing out) — an unchanged cart just loads the cloud copy as-is,
+  //    so logging out and back in with no changes never inflates it ──
   useEffect(() => {
     if (!user || syncedUidRef.current === user.uid) return;
     syncedUidRef.current = user.uid;
@@ -76,12 +83,14 @@ export const AppContextProvider = ({
     setCartSyncing(true);
     fetchCloudCart(user.uid)
       .then((cloudItems) => {
-        setCart((guestItems) => {
-          const merged = mergeCartItems(guestItems, cloudItems);
-          // Persist the merged result back up immediately so the cloud
-          // reflects whatever the guest had before signing in.
-          saveCloudCart(user.uid, merged);
-          return merged;
+        const snapshot = getSyncedSnapshot();
+        const baseline = snapshot && snapshot.uid === user.uid ? snapshot.items : null;
+
+        setCart((localItems) => {
+          const reconciled = reconcileCartOnSignIn(localItems, cloudItems, baseline);
+          saveCloudCart(user.uid, reconciled);
+          setSyncedSnapshot(user.uid, reconciled);
+          return reconciled;
         });
       })
       .finally(() => setCartSyncing(false));
@@ -93,6 +102,7 @@ export const AppContextProvider = ({
     persistCartToStorage(cart);
     if (user) {
       saveCloudCart(user.uid, cart);
+      setSyncedSnapshot(user.uid, cart);
     }
   }, [cart, user]);
 
@@ -135,7 +145,5 @@ export const useAppContext = (): AppContextParams => {
   }
   return context;
 };
-
-
 
 

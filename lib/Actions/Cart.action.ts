@@ -37,6 +37,82 @@ export const persistCartToStorage = (items: CartItem[]): void => {
   window.localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items));
 };
 
+// ── Sync snapshot ────────────────────────────────────────────
+// Stores what the cart looked like the last time it was successfully
+// synced with a given account. This is the baseline used to figure out
+// what's genuinely NEW in the local cart on the next sign-in (e.g. guest
+// additions made after signing out) versus what's just an unchanged
+// mirror of the cloud — without a baseline, a plain "add the quantities
+// together" merge doubles the cart every time you log back in with no
+// actual changes made.
+
+export interface CartSyncSnapshot {
+  uid: string;
+  items: CartItem[];
+}
+
+const SNAPSHOT_KEY = "cart_synced_snapshot";
+
+export const getSyncedSnapshot = (): CartSyncSnapshot | null => {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.localStorage.getItem(SNAPSHOT_KEY);
+    return raw ? (JSON.parse(raw) as CartSyncSnapshot) : null;
+  } catch {
+    return null;
+  }
+};
+
+export const setSyncedSnapshot = (uid: string, items: CartItem[]): void => {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(SNAPSHOT_KEY, JSON.stringify({ uid, items }));
+};
+
+/**
+ * Reconciles a local cart with a cloud cart at sign-in time. For each
+ * item: anything in the local cart BEYOND what the last synced snapshot
+ * already accounted for is treated as a genuine new guest addition and
+ * gets added on top of the cloud quantity. Anything unchanged since the
+ * snapshot is NOT re-added — that's what stops a plain refresh/re-login
+ * from doubling an already-synced cart.
+ */
+export const reconcileCartOnSignIn = (
+  localItems: CartItem[],
+  cloudItems: CartItem[],
+  snapshotItems: CartItem[] | null
+): CartItem[] => {
+  const snapshotMap = new Map((snapshotItems ?? []).map((i) => [i.id, i.quantity]));
+  const localMap = new Map(localItems.map((i) => [i.id, i]));
+  const cloudMap = new Map(cloudItems.map((i) => [i.id, i]));
+  const allIds = new Set([...localMap.keys(), ...cloudMap.keys()]);
+
+  const result: CartItem[] = [];
+
+  allIds.forEach((id) => {
+    const local = localMap.get(id);
+    const cloud = cloudMap.get(id);
+    const snapshotQty = snapshotMap.get(id) ?? 0;
+    const localQty = local?.quantity ?? 0;
+    const cloudQty = cloud?.quantity ?? 0;
+
+    const newlyAddedAsGuest = Math.max(0, localQty - snapshotQty);
+    const finalQuantity = cloudQty + newlyAddedAsGuest;
+    if (finalQuantity <= 0) return;
+
+    const source = cloud ?? local!;
+    result.push({
+      id,
+      productName: source.productName,
+      imageURL: source.imageURL,
+      price: source.price,
+      stock: source.stock,
+      quantity: Math.min(finalQuantity, source.stock ?? Infinity),
+    });
+  });
+
+  return result;
+};
+
 // ── Pure reducers (take current items, return new items) ───
 // Kept side-effect-free so AppContextProvider owns persistence/state.
 
