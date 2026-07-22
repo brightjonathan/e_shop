@@ -20,7 +20,7 @@ import { signOutUser } from "@/lib/Actions/UserAuth.action";
 
 const navLinks = [
   { href: "/admin-panel", label: "Home", icon: HiHome },
-  { href: "/admin-panel/all-products", label: "All Products", icon: HiCube },
+  { href: "/admin-panel/all-products", label: "Products", icon: HiCube },
   { href: "/admin-panel/add-product", label: "Add Product", icon: HiPlusCircle },
   { href: "/admin-panel/orders", label: "Orders", icon: HiClipboardList },
 ];
