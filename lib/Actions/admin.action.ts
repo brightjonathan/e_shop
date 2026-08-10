@@ -1,7 +1,7 @@
 // lib/Actions/admin.action.ts
 "use client";
 
-import { collection, getDocs } from "firebase/firestore";
+import { collection, getDocs, onSnapshot, orderBy, query, limit, where } from "firebase/firestore";
 import { db } from "@/lib/Firebase/client";
 import { ProductType } from "@/types/Product";
 import { OrderType } from "@/types/Order";
@@ -186,6 +186,58 @@ export const fetchDashboardStats = async (): Promise<DashboardStats> => {
     bestSellingProducts,
     bestSellingCategories,
   };
+};
+
+// ── Stock-tier product pages ─────────────────────────────────
+
+export type StockTier = "in-stock" | "low-stock" | "out-of-stock";
+
+export const fetchProductsByStockTier = async (tier: StockTier): Promise<ProductType[]> => {
+  try {
+    const snap = await getDocs(collection(db, "PRODUCTS"));
+    const products = snap.docs.map((d) => ({ id: d.id, ...d.data() } as ProductType));
+    return products.filter((p) => {
+      const stock = p.stock ?? 0;
+      if (tier === "out-of-stock") return stock === 0;
+      if (tier === "low-stock") return stock > 0 && stock < 5;
+      return stock >= 5;
+    });
+  } catch (err) {
+    console.error("fetchProductsByStockTier failed:", err);
+    return [];
+  }
+};
+
+// ── Live order notifications ─────────────────────────────────
+// Real-time subscription (not a one-time fetch) so the admin notification
+// bell can detect a NEW order arriving while the dashboard is open and
+// react to it (badge count + sound) — a plain getDocs() fetch can only
+// tell you what already existed at load time, not what just happened.
+//
+// NOTE: this needs a Firestore composite index on
+// (paymentStatus Ascending, createdAt Descending) for the `orders`
+// collection — different from the (userId, createdAt) index made earlier.
+// The first time this runs, check your browser console for a
+// "query requires an index" error with a direct link to create it.
+export const subscribeToRecentOrders = (
+  callback: (orders: OrderType[]) => void
+): (() => void) => {
+  const q = query(
+    collection(db, "orders"),
+    where("paymentStatus", "==", "Paid"),
+    orderBy("createdAt", "desc"),
+    limit(10)
+  );
+  return onSnapshot(
+    q,
+    (snap) => {
+      const orders = snap.docs.map((d) => ({ id: d.id, ...d.data() } as OrderType));
+      callback(orders);
+    },
+    (err) => {
+      console.error("subscribeToRecentOrders failed:", err);
+    }
+  );
 };
 
 

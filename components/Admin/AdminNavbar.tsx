@@ -13,8 +13,9 @@ import {
   HiClipboardList,
   HiLogout,
   HiMenuAlt2,
-  HiX,
+  HiX, // Import your custom icon here
 } from "react-icons/hi";
+import { ImProfile } from "react-icons/im";
 import { handleSignOut } from "../HandleSignOut";
 import { signOutUser } from "@/lib/Actions/UserAuth.action";
 
@@ -23,6 +24,7 @@ const navLinks = [
   { href: "/admin-panel/all-products", label: "Products", icon: HiCube },
   { href: "/admin-panel/add-product", label: "Add Product", icon: HiPlusCircle },
   { href: "/admin-panel/orders", label: "Orders", icon: HiClipboardList },
+  { href: "/admin-panel/customers", label: "Customers", icon: ImProfile },
 ];
 
 const AdminNavbar = () => {

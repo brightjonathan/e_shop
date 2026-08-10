@@ -57,10 +57,11 @@ const SearchIcon = () => (
 const AdminOrdersPage: React.FC = () => {
   const searchParams = useSearchParams();
   const statusFromUrl = searchParams.get("status") as OrderStatus | null;
+  const searchFromUrl = searchParams.get("search") ?? "";
 
   const [orders, setOrders] = useState<OrderType[]>([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState(searchFromUrl);
   const [activeFilter, setActiveFilter] = useState<"All" | OrderStatus>(statusFromUrl ?? "All");
   const [sortNewestFirst, setSortNewestFirst] = useState(true);
 
@@ -272,3 +273,8 @@ const AdminOrdersPage: React.FC = () => {
 };
 
 export default AdminOrdersPage;
+
+
+
+
+
