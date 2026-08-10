@@ -1,5 +1,6 @@
 "use client"
 
+import Footer from '@/components/Footer';
 import Header from '@/components/Header';
 import HomeSlide from '@/components/HomeSlide';
 import Products from '@/components/Products';
@@ -18,6 +19,8 @@ const Home = () => {
         <HomeSlide/>
         <Products/>
       </div>
+
+      <Footer/>
       
     </div>
   )

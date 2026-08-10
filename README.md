@@ -25,3 +25,5 @@ THINGS TO WORK ON:
 
 //NEXT TO WORK ON USERS IN ADMIN
 (1) TOTAL NUMBERS OF USER  //completed
+(2) WORK ON THE FOOTER     //not-completed
+(3)
