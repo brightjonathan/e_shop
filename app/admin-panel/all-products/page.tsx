@@ -30,6 +30,7 @@ import { ProductType } from "@/types/Product";
 const PER_PAGE = 10;         // rows per page
 const MAX_BTNS = 5;          // max visible page buttons (sliding window)
 const NEW_THRESHOLD_MS = 24 * 60 * 60 * 1000; // 24 h → show "New" badge
+const LOW_STOCK_THRESHOLD = 5; // same threshold used across the rest of the app
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -42,8 +43,87 @@ function isNew(product: ProductType): boolean {
   return Date.now() - ms < NEW_THRESHOLD_MS;
 }
 
+// Same color convention used on the dashboard, the storefront, and the
+// stock-tier admin pages: emerald = in stock, amber = low, red = out —
+// so admins recognize status instantly regardless of which page they're on.
+type StockTier = "in" | "low" | "out";
 
+function getStockTier(stock: number | undefined): StockTier {
+  const s = stock ?? 0;
+  if (s <= 0) return "out";
+  if (s < LOW_STOCK_THRESHOLD) return "low";
+  return "in";
+}
 
+const STOCK_TIER_STYLE: Record<StockTier, { bg: string; border: string; color: string; label: (n: number) => string }> = {
+  in: {
+    bg: "rgba(16,185,129,0.12)",
+    border: "rgba(16,185,129,0.3)",
+    color: "#34d399",
+    label: (n) => `${n} in stock`,
+  },
+  low: {
+    bg: "rgba(245,158,11,0.12)",
+    border: "rgba(245,158,11,0.3)",
+    color: "#fbbf24",
+    label: (n) => `${n} left`,
+  },
+  out: {
+    bg: "rgba(239,68,68,0.12)",
+    border: "rgba(239,68,68,0.3)",
+    color: "#f87171",
+    label: () => "Out of stock",
+  },
+};
+
+function StockBadge({ stock }: { stock: number | undefined }) {
+  const tier = getStockTier(stock);
+  const s = STOCK_TIER_STYLE[tier];
+  return (
+    <span
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 5,
+        fontSize: 11,
+        fontWeight: 600,
+        padding: "4px 10px",
+        borderRadius: 999,
+        background: s.bg,
+        color: s.color,
+        border: `1px solid ${s.border}`,
+        whiteSpace: "nowrap",
+      }}
+    >
+      <span style={{ width: 6, height: 6, borderRadius: "50%", background: s.color, flexShrink: 0 }} />
+      {s.label(stock ?? 0)}
+    </span>
+  );
+}
+
+function DiscountBadge({ discountPercentage }: { discountPercentage: number | undefined }) {
+  if (!discountPercentage || discountPercentage <= 0) {
+    return <span style={{ fontSize: 12, color: "rgba(255,255,255,0.25)" }}>—</span>;
+  }
+  return (
+    <span
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        fontSize: 11,
+        fontWeight: 700,
+        padding: "4px 10px",
+        borderRadius: 999,
+        background: "rgba(252,227,199,0.15)",
+        color: "#fce3c7",
+        border: "1px solid rgba(252,227,199,0.3)",
+        whiteSpace: "nowrap",
+      }}
+    >
+      {discountPercentage}% off
+    </span>
+  );
+}
 
 // ─── Highlight component ──────────────────────────────────────────────────────
 
@@ -79,6 +159,8 @@ function SkeletonRows() {
           <td><div className={styles.skeletonImg} /></td>
           <td><div className={styles.skeletonLine} style={{ width: "80%" }} /></td>
           <td><div className={styles.skeletonLine} style={{ width: 70 }} /></td>
+          <td><div className={styles.skeletonLine} style={{ width: 60 }} /></td>
+          <td><div className={styles.skeletonLine} style={{ width: 50 }} /></td>
           <td><div className={styles.skeletonLine} style={{ width: 50 }} /></td>
           <td><div className={styles.skeletonLine} style={{ width: 60 }} /></td>
         </tr>
@@ -227,6 +309,15 @@ export default function AllProductsPage() {
     );
   }, [products, search]);
 
+  // ── Stock summary counts, for the legend ───────────────────────────────────
+  const stockCounts = useMemo(() => {
+    const counts = { in: 0, low: 0, out: 0 };
+    products.forEach((p) => {
+      counts[getStockTier(p.stock)] += 1;
+    });
+    return counts;
+  }, [products]);
+
   // ── Pagination ────────────────────────────────────────────────────────────
   const totalPages = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
   const safePage   = Math.min(currentPage, totalPages);
@@ -299,6 +390,24 @@ export default function AllProductsPage() {
         </div>
       </div>
 
+      {/* ── Stock status legend, for quick visual reference ── */}
+      {!loading && products.length > 0 && (
+        <div style={{ display: "flex", gap: 16, alignItems: "center", flexWrap: "wrap", marginBottom: 16 }}>
+          {(["in", "low", "out"] as StockTier[]).map((tier) => {
+            const s = STOCK_TIER_STYLE[tier];
+            const tierLabel = tier === "in" ? "In Stock" : tier === "low" ? "Low Stock" : "Out of Stock";
+            return (
+              <div key={tier} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12 }}>
+                <span style={{ width: 8, height: 8, borderRadius: "50%", background: s.color, flexShrink: 0 }} />
+                <span style={{ color: "black" }}>
+                  {tierLabel} <span style={{ color: s.color, fontWeight: 600 }}>({stockCounts[tier]})</span>
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
       {/* ── Error banner ── */}
       {error && (
         <div className={styles.errorBanner} role="alert">
@@ -316,6 +425,8 @@ export default function AllProductsPage() {
               <th style={{ width: 90 }}>Image</th>
               <th>Name</th>
               <th>Category</th>
+              <th style={{ width: 120 }}>Stock</th>
+              <th style={{ width: 100 }}>Discount</th>
               <th>Price</th>
               <th style={{ width: 90 }}>Actions</th>
             </tr>
@@ -325,7 +436,7 @@ export default function AllProductsPage() {
               <SkeletonRows />
             ) : pageItems.length === 0 ? (
               <tr>
-                <td colSpan={6}>
+                <td colSpan={8}>
                   <div className={styles.empty}>
                     <div className={styles.emptyIcon}>
                       <FiPackage size={24} />
@@ -377,6 +488,16 @@ export default function AllProductsPage() {
                     <span className={styles.catBadge}>
                       <Highlight text={product.category} term={search} />
                     </span>
+                  </td>
+
+                  {/* Stock — color-coded */}
+                  <td>
+                    <StockBadge stock={product.stock} />
+                  </td>
+
+                  {/* Discount */}
+                  <td>
+                    <DiscountBadge discountPercentage={product.discountPercentage} />
                   </td>
 
                   {/* Price */}
@@ -438,4 +559,10 @@ export default function AllProductsPage() {
     </div>
   );
 }
+
+
+
+
+
+
 
