@@ -27,3 +27,10 @@ THINGS TO WORK ON:
 (1) TOTAL NUMBERS OF USER  //completed
 (2) WORK ON THE FOOTER     //not-completed
 (3) WORK ON THE cart discount //not-completed
+(4) WORK ON THE EMAIL NOTIFICATION WHEN YOU PLACED AND ORDER //not-completed
+(5) WORK ON ANALYTICS // not-competed
+
+
+//WORK ON THE AUTH PAGES AGAIN
+(1) work on the Register page, it will send a msg for auth
+(2) work on the forgotten password going to spam
